@@ -19,8 +19,8 @@ jobs:
         coverage: none
         tools: cs2pr, vimeo/psalm:4.23, phpstan:1.8
 
-    - name: Composer Install
-      run: composer stan-setup
+    - name: Composer install
+      uses: ramsey/composer-install@v2
 
     - name: Run phpcs
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
