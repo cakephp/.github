@@ -42,6 +42,7 @@ jobs:
       with:
         php-version: ${{ matrix.php-version }}
         extensions: mbstring, intl, pdo_${{ matrix.db-type }}
+        ini-values: zend.assertions=1
         coverage: pcov
 
     - name: Composer install
