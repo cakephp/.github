@@ -29,6 +29,7 @@ jobs:
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
 
     - name: Run psalm
+      if: always()
       run: psalm --output-format=github
 
     - name: Run phpstan
