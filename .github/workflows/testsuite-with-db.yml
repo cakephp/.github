@@ -3,6 +3,9 @@ name: Testsuite with DB
 on:
   workflow_call:
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   testsuite-linux:
     runs-on: ubuntu-22.04

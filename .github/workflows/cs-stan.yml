@@ -3,6 +3,9 @@ name: Coding Standard & Static Analysis
 on:
   workflow_call:
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   cs-stan:
     name: Coding Standard & Static Analysis
