@@ -20,7 +20,7 @@ jobs:
         php-version: '8.1'
         extensions: mbstring, intl
         coverage: none
-        tools: cs2pr, vimeo/psalm:4.26, phpstan:1.8
+        tools: cs2pr, vimeo/psalm:5-beta, phpstan:1.8
 
     - name: Composer install
       uses: ramsey/composer-install@v2
@@ -30,7 +30,6 @@ jobs:
 
     - name: Run psalm
       run: psalm --output-format=github
-      continue-on-error: true
 
     - name: Run phpstan
       if: always()
