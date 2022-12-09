@@ -21,7 +21,6 @@ jobs:
             dependencies: 'lowest'
           - php-version: '8.2'
             db-type: 'mysql'
-            composer-options: '--ignore-platform-req=php'
 
     services:
       postgres:
