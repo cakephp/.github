@@ -2,6 +2,11 @@ name: Coding Standard & Static Analysis
 
 on:
   workflow_call:
+    inputs:
+      check_tests:
+        description: 'Whether to run static analysis for tests'
+        required: false
+        type: boolean
 
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -20,7 +25,7 @@ jobs:
         php-version: '8.1'
         extensions: mbstring, intl
         coverage: none
-        tools: cs2pr, vimeo/psalm:5.1, phpstan:1.9
+        tools: cs2pr, vimeo/psalm:5.2, phpstan:1.9
 
     - name: Composer install
       uses: ramsey/composer-install@v2
@@ -35,3 +40,7 @@ jobs:
     - name: Run phpstan
       if: always()
       run: phpstan analyse --error-format=github
+
+    - name: Run phpstan for tests
+      if: ${{ inputs.check_tests }}
+      run: phpstan analyse -c tests/phpstan.neon --error-format=github
