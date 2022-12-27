@@ -26,7 +26,9 @@ jobs:
         extensions: mbstring, intl
         coverage: none
         tools: cs2pr, vimeo/psalm:5.2, phpstan:1.9
-
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
     - name: Composer install
       uses: ramsey/composer-install@v2
 
