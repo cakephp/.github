@@ -9,7 +9,8 @@ on:
         type: boolean
       phive_keys:
         description: 'GPG key signatures for phive packages. Should be comma separated string "800d,d44d"'
-        required: true
+        required: false
+        default: 'CF1A108D0E7AE720,12CE0F1D262429A5'
         type: string
 
 permissions:
