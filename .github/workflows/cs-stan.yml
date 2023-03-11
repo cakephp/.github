@@ -33,22 +33,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Get composer cache directory
-      id: composer-cache
-      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-    - name: Get date part for cache key
-      id: key-date
-      run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
-
-    - name: Cache composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ steps.key-date.outputs.date }}-${{ hashFiles('composer.json') }}-${{ matrix.prefer-lowest }}
-
     - name: Composer install
-      run: composer update
+      uses: ramsey/composer-install@v2
 
     - name: Install PHP tools with phive.
       run: "phive install --trust-gpg-keys '${{ inputs.phive_keys }}'"
