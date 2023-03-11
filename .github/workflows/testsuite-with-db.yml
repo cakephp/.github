@@ -22,22 +22,20 @@ jobs:
           - php-version: '8.2'
             db-type: 'mysql'
 
-    services:
-      postgres:
-        image: postgres
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
-
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup Service
+    - name: Setup MySQL
       if: matrix.db-type == 'mysql'
       run: |
-        sudo service mysql start
-        mysql -h 127.0.0.1 -u root -proot -e 'CREATE DATABASE cakephp;'
+          # MySQL 8.0 on Ubuntu 22.04
+          sudo service mysql start
+          mysql -h 127.0.0.1 -u root -proot -e 'CREATE DATABASE cakephp;'
+
+    - name: Setup PostgreSQL
+      if: matrix.db-type == 'pgsql'
+      uses: ikalnytskyi/action-setup-postgres@v4
+      id: postgres
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -62,7 +60,7 @@ jobs:
           export DB_URL='mysql://root:root@127.0.0.1/cakephp'
         fi
         if [[ ${{ matrix.db-type }} == 'pgsql' ]]; then
-          export DB_URL='postgres://postgres:postgres@127.0.0.1/postgres'
+          export DB_URL='${{ steps.postgres.outputs.connection-uri }}'
         fi
         if [[ ${{ matrix.php-version }} == '8.1' && ${{ matrix.db-type }} == 'mysql' ]]; then
           vendor/bin/phpunit --coverage-clover=coverage.xml
