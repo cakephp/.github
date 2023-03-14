@@ -27,7 +27,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-version }}
-        extensions: mbstring, intl, pdo_${{ matrix.db-type }}
+        extensions: mbstring, intl
         ini-values: zend.assertions=1
         coverage: pcov
 
