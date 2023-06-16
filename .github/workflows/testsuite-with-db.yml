@@ -65,9 +65,9 @@ jobs:
           export DB_URL='postgres://postgres:postgres@127.0.0.1/postgres'
         fi
         if [[ ${{ matrix.php-version }} == '8.1' && ${{ matrix.db-type }} == 'mysql' ]]; then
-          vendor/bin/phpunit --coverage-clover=coverage.xml
+          vendor/bin/phpunit --display-deprecations --display-incomplete --display-skipped  --coverage-clover=coverage.xml
         else
-          vendor/bin/phpunit
+          vendor/bin/phpunit --display-deprecations
         fi
 
     - name: Code Coverage Report
