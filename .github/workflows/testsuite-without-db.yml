@@ -9,16 +9,24 @@ permissions:
 jobs:
   testsuite-linux:
     runs-on: ubuntu-22.04
+    continue-on-error: ${{ matrix.unstable }}
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.1']
-        dependencies: ['highest']
+        dependencies: [highest]
+        unstable: [false]
         include:
           - php-version: '8.1'
-            dependencies: 'lowest'
+            dependencies: lowest
+            unstable: false
           - php-version: '8.2'
-            dependencies: 'highest'
+            dependencies: highest
+            unstable: false
+          - php-version: '8.3'
+            dependencies: highest
+            composer-options: "--ignore-platform-reqs"
+            unstable: true
 
     steps:
     - uses: actions/checkout@v4

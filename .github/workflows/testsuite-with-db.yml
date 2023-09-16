@@ -9,18 +9,26 @@ permissions:
 jobs:
   testsuite-linux:
     runs-on: ubuntu-22.04
+    continue-on-error: ${{ matrix.unstable }}
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.1']
         db-type: [mysql, pgsql]
-        dependencies: ['highest']
+        dependencies: [highest]
+        unstable: [false]
         include:
           - php-version: '8.1'
-            db-type: 'sqlite'
-            dependencies: 'lowest'
+            db-type: sqlite
+            dependencies: lowest
+            unstable: false
           - php-version: '8.2'
-            db-type: 'mysql'
+            db-type: mysql
+            unstable: false
+          - php-ersion: '8.3'
+            dependencies: highest
+            composer-options: "--ignore-platform-reqs"
+            untable: true
 
     services:
       postgres:
