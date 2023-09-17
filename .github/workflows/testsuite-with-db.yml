@@ -25,10 +25,10 @@ jobs:
           - php-version: '8.2'
             db-type: mysql
             unstable: false
-          - php-ersion: '8.3'
+          - php-version: '8.3'
             dependencies: highest
             composer-options: "--ignore-platform-reqs"
-            untable: true
+            unstable: true
 
     services:
       postgres:
