@@ -26,6 +26,7 @@ jobs:
             db-type: mysql
             unstable: false
           - php-version: '8.3'
+            db-type: sqlite
             dependencies: highest
             composer-options: "--ignore-platform-reqs"
             unstable: true
