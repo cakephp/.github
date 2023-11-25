@@ -25,8 +25,7 @@ jobs:
             unstable: false
           - php-version: '8.3'
             dependencies: highest
-            composer-options: "--ignore-platform-reqs"
-            unstable: true
+            unstable: false
 
     steps:
     - uses: actions/checkout@v4
