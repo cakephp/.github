@@ -29,6 +29,11 @@ jobs:
             db-type: sqlite
             dependencies: highest
             unstable: false
+          - php-version: '8.4'
+            db-type: mysql
+            dependencies: highest
+            unstable: true
+            composer-options: '--ignore-platform-req=php'
 
     services:
       postgres:
@@ -56,7 +61,7 @@ jobs:
         coverage: pcov
 
     - name: Composer install
-      uses: ramsey/composer-install@v2
+      uses: ramsey/composer-install@v3
       with:
         dependency-versions: ${{ matrix.dependencies }}
         composer-options: ${{ matrix.composer-options }}
