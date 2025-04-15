@@ -46,10 +46,6 @@ jobs:
       if: always()
       run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
 
-    - name: Run psalm
-      if: always()
-      run: tools/psalm --output-format=github
-
     - name: Run phpstan
       if: always()
       run: tools/phpstan analyse --error-format=github
