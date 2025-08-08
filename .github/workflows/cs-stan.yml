@@ -42,10 +42,6 @@ jobs:
     - name: Install PHP tools with phive.
       run: "phive install --trust-gpg-keys '${{ inputs.phive_keys }}'"
 
-    - name: Run phpcs
-      if: always()
-      run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
-
     - name: Run phpstan
       if: always()
       run: tools/phpstan analyse --error-format=github
@@ -53,3 +49,7 @@ jobs:
     - name: Run phpstan for tests
       if: ${{ inputs.check_tests }}
       run: tools/phpstan analyse -c tests/phpstan.neon --error-format=github
+
+    - name: Run phpcs
+      if: always()
+      run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
