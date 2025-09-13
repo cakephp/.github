@@ -33,6 +33,10 @@ jobs:
             db-type: mysql
             dependencies: highest
             unstable: false
+          - php-version: '8.5'
+            db-type: sqlite
+            dependencies: highest
+            unstable: true
 
     services:
       postgres:
