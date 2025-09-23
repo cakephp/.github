@@ -23,6 +23,9 @@ jobs:
           - php-version: '8.4'
             dependencies: highest
             unstable: false
+          - php-version: '8.5'
+            dependencies: highest
+            unstable: true
 
     steps:
     - uses: actions/checkout@v4
