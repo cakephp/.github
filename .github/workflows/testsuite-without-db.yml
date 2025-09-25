@@ -25,7 +25,7 @@ jobs:
             unstable: false
           - php-version: '8.5'
             dependencies: highest
-            unstable: true
+            unstable: false
             composer-options: '--ignore-platform-req=php'
 
     steps:
