@@ -49,9 +49,9 @@ jobs:
     - name: Run PHPUnit
       run: |
         if [[ ${{ matrix.php-version }} == '8.2' && ${{ matrix.dependencies }} == 'highest' ]]; then
-          export CODECOVERAGE=1 && vendor/bin/phpunit --display-all-issues --fail-on-all-issues --do-not-fail-on-skipped --do-not-fail-on-incomplete --coverage-clover=coverage.xml
+          export CODECOVERAGE=1 && vendor/bin/phpunit --display-phpunit-notices --display-phpunit-deprecations --display-all-issues --fail-on-all-issues --do-not-fail-on-skipped --do-not-fail-on-incomplete --coverage-clover=coverage.xml
         else
-          vendor/bin/phpunit --display-phpunit-notices --display-phpunit-deprecations --display-warnings --display-deprecations
+          vendor/bin/phpunit --display-warnings --display-deprecations
         fi
 
     - name: Code Coverage Report
