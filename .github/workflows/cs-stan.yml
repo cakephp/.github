@@ -56,7 +56,7 @@ jobs:
 
     - name: Run phpcs
       if: always()
-      run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
+      run: vendor/bin/phpcs --report=checkstyle | cs2pr
 
     - name: Setup rector cache
       if: ${{ always() && hashFiles('rector.php') }}
