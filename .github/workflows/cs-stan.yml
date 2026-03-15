@@ -10,7 +10,7 @@ on:
       phive_keys:
         description: 'GPG key signatures for phive packages. Should be comma separated string "800d,d44d"'
         required: false
-        default: 'CF1A108D0E7AE720,51C67305FFC2E5C0,12CE0F1D262429A5,51C67305FFC2E5C0,99BF4D9A33D65E1E'
+        default: 'CF1A108D0E7AE720,51C67305FFC2E5C0,12CE0F1D262429A5,99BF4D9A33D65E1E,51C67305FFC2E5C0,99BF4D9A33D65E1E'
         type: string
 
 permissions:
@@ -50,6 +50,28 @@ jobs:
       if: ${{ inputs.check_tests }}
       run: tools/phpstan analyse -c tests/phpstan.neon --error-format=github
 
+    - name: Run psalm
+      if: ${{ always() && hashFiles('psalm.xml') }}
+      run: tools/psalm --output-format=github
+
     - name: Run phpcs
       if: always()
-      run: vendor/bin/phpcs --report=checkstyle src/ tests/ | cs2pr
+      run: vendor/bin/phpcs --report=checkstyle | cs2pr
+
+    - name: Setup rector cache
+      if: ${{ always() && hashFiles('rector.php') }}
+      uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/rector
+        key: ${{ runner.os }}-rector-${{ hashFiles('rector.php', 'composer.lock') }}
+        restore-keys: ${{ runner.os }}-rector-
+
+    - name: Create rector cache dir
+      if: ${{ always() && hashFiles('rector.php') }}
+      run: mkdir -p ${{ runner.temp }}/rector
+
+    - name: Run rector
+      if: ${{ always() && hashFiles('rector.php') }}
+      env:
+        RECTOR_CACHE_DIR: ${{ runner.temp }}/rector
+      run: composer rector-setup && composer rector-check
