@@ -75,9 +75,7 @@ function matchPattern(filename, pattern) {
     .replace(/\./g, "\\.")
     .replace(/\*/g, ".*")
     .replace(/\?/g, ".");
-  return (
-    new RegExp(`^${regex}$`).test(filename) || new RegExp(regex).test(filename)
-  );
+  return new RegExp(`^${regex}$`).test(filename);
 }
 
 class LinkChecker {
@@ -201,7 +199,7 @@ class LinkChecker {
         continue;
       }
 
-      const { targetPath, anchor } = this.parseLink(link.url, sourceDir);
+      const { targetPath, anchor } = this.parseLink(link.url, sourceDir, filePath);
 
       // Check file exists
       if (!fs.existsSync(targetPath)) {
@@ -269,20 +267,20 @@ class LinkChecker {
    * Check if a URL is external
    */
   isExternalLink(url) {
-    // Skip HTTP(S), mailto, IRC, anchor-only, protocol-relative, and absolute paths (VitePress public dir)
-    return /^(https?:\/\/|mailto:|irc:\/\/|#|\/\/|\/[^.])/i.test(url);
+    // Skip HTTP(S), mailto, IRC, protocol-relative, and absolute paths (VitePress public dir)
+    return /^(https?:\/\/|mailto:|irc:\/\/|\/\/|\/[^.])/i.test(url);
   }
 
   /**
    * Parse link URL into target path and anchor
    */
-  parseLink(url, sourceDir) {
+  parseLink(url, sourceDir, sourceFile) {
     const [pathPart, anchor] = url.split("#");
 
     // Handle anchor-only links (same file)
     if (!pathPart) {
       return {
-        targetPath: path.join(sourceDir, path.basename(sourceDir) + ".md"),
+        targetPath: sourceFile,
         anchor,
       };
     }
