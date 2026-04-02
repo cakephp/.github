@@ -59,7 +59,19 @@ function getLangFromTocFile(tocFile) {
  * Main validation function
  */
 function validateTocFiles() {
-  const tocFiles = fs.readdirSync(".vitepress").filter((f) => f.match(/^toc_.*\.json$/)).map((f) => `.vitepress/${f}`);
+  const args = process.argv.slice(2);
+  let vitepressPath = ".vitepress";
+  let docsBasePath = "docs";
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--vitepress-path" && i + 1 < args.length) {
+      vitepressPath = args[++i];
+    } else if (args[i] === "--docs-path" && i + 1 < args.length) {
+      docsBasePath = args[++i];
+    }
+  }
+
+  const tocFiles = fs.readdirSync(vitepressPath).filter((f) => f.match(/^toc_.*\.json$/)).map((f) => path.join(vitepressPath, f));
 
   if (tocFiles.length === 0) {
     console.error("No toc_*.json files found");
@@ -75,7 +87,7 @@ function validateTocFiles() {
       continue;
     }
 
-    const docsDir = path.join("docs", lang);
+    const docsDir = path.join(docsBasePath, lang);
     if (!fs.existsSync(docsDir)) {
       console.error(`Docs directory not found: ${docsDir}`);
       hasErrors = true;

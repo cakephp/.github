@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: 'docs'
+      vitepress-path:
+        description: 'Path to the .vitepress directory (e.g. ".vitepress" or "docs/.vitepress")'
+        required: false
+        type: string
+        default: '.vitepress'
       enable-toc-check:
         description: 'Enable TOC link validation (requires .vitepress/toc_*.json)'
         required: false
@@ -69,7 +74,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Validate config.js syntax
-        run: node --check .vitepress/config.js
+        run: node --check "${{ inputs.vitepress-path }}/config.js"
 
   json-lint:
     name: Validate JSON Files
@@ -82,9 +87,9 @@ jobs:
       - name: Validate JSON syntax
         run: |
           shopt -s nullglob
-          files=(.vitepress/toc_*.json)
+          files=("${{ inputs.vitepress-path }}"/toc_*.json)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No .vitepress/toc_*.json files found"
+            echo "No ${{ inputs.vitepress-path }}/toc_*.json files found"
             exit 1
           fi
           for file in "${files[@]}"; do
@@ -113,7 +118,7 @@ jobs:
             docs-validation/check-toc-links.cjs
 
       - name: Check TOC links exist
-        run: node .docs-tools/docs-validation/check-toc-links.cjs
+        run: node .docs-tools/docs-validation/check-toc-links.cjs --vitepress-path "${{ inputs.vitepress-path }}" --docs-path "${{ inputs.docs-path }}"
 
   markdown-lint:
     name: Lint Markdown
