@@ -1,0 +1,249 @@
+name: Reusable Documentation Validation
+
+on:
+  workflow_call:
+    inputs:
+      docs-path:
+        description: 'Path to the docs directory (e.g. "docs")'
+        required: false
+        type: string
+        default: 'docs'
+      vitepress-path:
+        description: 'Path to the .vitepress directory (e.g. ".vitepress" or "docs/.vitepress")'
+        required: false
+        type: string
+        default: '.vitepress'
+      enable-toc-check:
+        description: 'Enable TOC link validation (requires .vitepress/toc_*.json)'
+        required: false
+        type: boolean
+        default: false
+      enable-config-js-check:
+        description: 'Enable .vitepress/config.js syntax check'
+        required: false
+        type: boolean
+        default: false
+      enable-json-lint:
+        description: 'Enable TOC JSON file validation'
+        required: false
+        type: boolean
+        default: false
+      enable-spell-check:
+        description: 'Enable spell checking'
+        required: false
+        type: boolean
+        default: true
+      enable-markdown-lint:
+        description: 'Enable markdown linting'
+        required: false
+        type: boolean
+        default: true
+      enable-link-check:
+        description: 'Enable internal link checking'
+        required: false
+        type: boolean
+        default: true
+      cspell-config:
+        description: 'Path to cspell config file (relative to caller repo). Leave empty to use shared default.'
+        required: false
+        type: string
+        default: ''
+      markdownlint-config:
+        description: 'Path to markdownlint config file (relative to caller repo). Leave empty to use shared default.'
+        required: false
+        type: string
+        default: ''
+      linkchecker-baseline:
+        description: 'Path to link checker baseline JSON (relative to caller repo). Leave empty for no baseline.'
+        required: false
+        type: string
+        default: ''
+      tools-ref:
+        description: 'Branch/tag of cakephp/.github to use for shared validation tools and default configs'
+        required: false
+        type: string
+        default: 'main'
+
+jobs:
+  js-lint:
+    name: Validate config.js
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable-config-js-check }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Validate config.js syntax
+        run: node --check "${{ inputs.vitepress-path }}/config.js"
+
+  json-lint:
+    name: Validate JSON Files
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable-json-lint }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Validate JSON syntax
+        run: |
+          shopt -s nullglob
+          files=("${{ inputs.vitepress-path }}"/toc_*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No ${{ inputs.vitepress-path }}/toc_*.json files found"
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "Invalid JSON: $file"
+              exit 1
+            fi
+            echo "Valid: $file"
+          done
+
+  toc-link-check:
+    name: Validate TOC Links
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable-toc-check }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Checkout shared validation tools
+        uses: actions/checkout@v6
+        with:
+          repository: cakephp/.github
+          ref: ${{ inputs.tools-ref }}
+          path: .docs-tools
+          sparse-checkout: |
+            docs-validation/check-toc-links.cjs
+
+      - name: Check TOC links exist
+        run: node .docs-tools/docs-validation/check-toc-links.cjs --vitepress-path "${{ inputs.vitepress-path }}" --docs-path "${{ inputs.docs-path }}"
+
+  markdown-lint:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable-markdown-lint }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Checkout shared validation tools
+        uses: actions/checkout@v6
+        with:
+          repository: cakephp/.github
+          ref: ${{ inputs.tools-ref }}
+          path: .docs-tools
+          sparse-checkout: |
+            docs-validation/.markdownlint-cli2.jsonc
+            docs-validation/markdownlint-rules
+
+      - name: Determine config path
+        id: config
+        run: |
+          if [ -n "${{ inputs.markdownlint-config }}" ]; then
+            if [ -f "${{ inputs.markdownlint-config }}" ]; then
+              echo "path=${{ inputs.markdownlint-config }}" >> $GITHUB_OUTPUT
+            else
+              echo "Error: markdownlint config '${{ inputs.markdownlint-config }}' does not exist." >&2
+              exit 1
+            fi
+          else
+            echo "path=.docs-tools/docs-validation/.markdownlint-cli2.jsonc" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Lint markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v23
+        with:
+          config: ${{ steps.config.outputs.path }}
+          globs: '${{ inputs.docs-path }}/**/*.md'
+
+  spell-check:
+    name: Spell Check
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable-spell-check }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Checkout shared validation tools
+        uses: actions/checkout@v6
+        with:
+          repository: cakephp/.github
+          ref: ${{ inputs.tools-ref }}
+          path: .docs-tools
+          sparse-checkout: |
+            docs-validation/cspell.json
+
+      - name: Determine config path
+        id: config
+        run: |
+          if [ -n "${{ inputs.cspell-config }}" ]; then
+            if [ -f "${{ inputs.cspell-config }}" ]; then
+              echo "path=${{ inputs.cspell-config }}" >> $GITHUB_OUTPUT
+            else
+              echo "Error: cspell config '${{ inputs.cspell-config }}' does not exist." >&2
+              exit 1
+            fi
+          else
+            echo "path=.docs-tools/docs-validation/cspell.json" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check spelling
+        uses: streetsidesoftware/cspell-action@v8
+        with:
+          files: '${{ inputs.docs-path }}/**/*.md'
+          config: ${{ steps.config.outputs.path }}
+          incremental_files_only: true
+
+  link-check:
+    name: Check Internal Links
+    runs-on: ubuntu-latest
+    if: ${{ inputs.enable-link-check }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Checkout shared validation tools
+        uses: actions/checkout@v6
+        with:
+          repository: cakephp/.github
+          ref: ${{ inputs.tools-ref }}
+          path: .docs-tools
+          sparse-checkout: |
+            docs-validation/check-links.cjs
+
+      - name: Get changed markdown files
+        id: changed-files
+        run: |
+          DOCS_PATH="${{ inputs.docs-path }}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            if [ -z "$BASE_SHA" ]; then
+              git fetch origin "${{ github.base_ref }}" --depth=1 2>/dev/null || true
+              BASE_SHA="origin/${{ github.base_ref }}"
+            fi
+            FILES=$(git diff --name-only --diff-filter=d "${BASE_SHA}"...HEAD | grep "^${DOCS_PATH}/.*\.md$" || true)
+            if [ -z "$FILES" ]; then
+              echo "No markdown files changed in ${DOCS_PATH}/"
+              echo "files=" >> $GITHUB_OUTPUT
+            else
+              echo "files=$(echo $FILES | tr '\n' ' ')" >> $GITHUB_OUTPUT
+              echo "Checking files:"
+              echo "$FILES"
+            fi
+          else
+            echo "files=${DOCS_PATH}/**/*.md" >> $GITHUB_OUTPUT
+            echo "Checking all files: ${DOCS_PATH}/**/*.md"
+          fi
+
+      - name: Check internal links
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          BASELINE_ARG=""
+          if [ -n "${{ inputs.linkchecker-baseline }}" ] && [ -f "${{ inputs.linkchecker-baseline }}" ]; then
+            BASELINE_ARG="--baseline ${{ inputs.linkchecker-baseline }}"
+          fi
+          node .docs-tools/docs-validation/check-links.cjs $BASELINE_ARG ${{ steps.changed-files.outputs.files }}
