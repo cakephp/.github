@@ -41,6 +41,11 @@ function checkLink(link, docsDir, lang) {
     relativePath = relativePath.slice(langPrefix.length);
   }
 
+  // A bare "/" (now empty string) maps to "index"
+  if (relativePath === "") {
+    relativePath = "index";
+  }
+
   const filePath = path.join(docsDir, relativePath + ".md");
 
   return fs.existsSync(filePath);
@@ -121,6 +126,9 @@ function validateTocFiles() {
         const langPrefix = lang + "/";
         if (relativePath.startsWith(langPrefix)) {
           relativePath = relativePath.slice(langPrefix.length);
+        }
+        if (relativePath === "") {
+          relativePath = "index";
         }
         const expectedPath = path.join(docsDir, relativePath + ".md");
         console.error(`  ${link}`);
