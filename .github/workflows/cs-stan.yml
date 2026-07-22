@@ -58,13 +58,22 @@ jobs:
       if: always()
       run: vendor/bin/phpcs --report=checkstyle | cs2pr
 
+    - name: Install rector
+      if: ${{ always() && hashFiles('rector.php') }}
+      run: composer rector-setup
+
+    - name: Get rector version
+      if: ${{ always() && hashFiles('rector.php') }}
+      id: rector-version
+      run: echo "value=$(composer show rector/rector --format=json | jq -r '.versions[0]')" >> "$GITHUB_OUTPUT"
+
     - name: Setup rector cache
       if: ${{ always() && hashFiles('rector.php') }}
       uses: actions/cache@v5
       with:
         path: ${{ runner.temp }}/rector
-        key: ${{ runner.os }}-rector-${{ hashFiles('rector.php', 'composer.lock') }}
-        restore-keys: ${{ runner.os }}-rector-
+        key: ${{ runner.os }}-rector-${{ steps.rector-version.outputs.value }}-${{ hashFiles('rector.php', 'composer.lock') }}
+        restore-keys: ${{ runner.os }}-rector-${{ steps.rector-version.outputs.value }}-
 
     - name: Create rector cache dir
       if: ${{ always() && hashFiles('rector.php') }}
@@ -74,4 +83,4 @@ jobs:
       if: ${{ always() && hashFiles('rector.php') }}
       env:
         RECTOR_CACHE_DIR: ${{ runner.temp }}/rector
-      run: composer rector-setup && composer rector-check
+      run: composer rector-check
