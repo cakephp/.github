@@ -41,6 +41,8 @@ jobs:
 
     - name: Install PHP tools with phive.
       run: "phive install --trust-gpg-keys '${{ inputs.phive_keys }}'"
+      env:
+        GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run phpstan
       if: always()

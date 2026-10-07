@@ -20,6 +20,8 @@ jobs:
           - php-version: '8.2'
             dependencies: lowest
             unstable: false
+          - php-version: '8.6'
+            composer-options: '--ignore-platform-req=php+'
 
     steps:
     - uses: actions/checkout@v4
