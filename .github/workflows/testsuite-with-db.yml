@@ -13,12 +13,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.4']
+        php-version: ['8.5']
         db-type: [mysql, sqlite]
         dependencies: [highest]
         unstable: [false]
         include:
-          - php-version: '8.4'
+          - php-version: '8.5'
             db-type: sqlite
             dependencies: lowest
             unstable: false
@@ -77,14 +77,14 @@ jobs:
         if [[ ${{ matrix.db-type }} == 'pgsql' ]]; then
           export DB_URL='postgres://postgres:postgres@127.0.0.1/postgres'
         fi
-        if [[ ${{ matrix.php-version }} == '8.4' && ${{ matrix.dependencies }} == 'highest' && ${{ matrix.db-type }} == 'mysql' ]]; then
+        if [[ ${{ matrix.php-version }} == '8.5' && ${{ matrix.dependencies }} == 'highest' && ${{ matrix.db-type }} == 'mysql' ]]; then
           export CODECOVERAGE=1 && vendor/bin/phpunit --display-all-issues --fail-on-all-issues --do-not-fail-on-skipped --do-not-fail-on-incomplete  --coverage-clover=coverage.xml
         else
           vendor/bin/phpunit --display-phpunit-deprecations --display-warnings --display-deprecations
         fi
 
     - name: Code Coverage Report
-      if: success() && matrix.php-version == '8.4' && matrix.dependencies == 'highest' && matrix.db-type == 'mysql'
+      if: success() && matrix.php-version == '8.5' && matrix.dependencies == 'highest' && matrix.db-type == 'mysql'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
